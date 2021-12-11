@@ -1,4 +1,7 @@
+import pytest
+
 from b_aws_cf.credentials import Credentials
+from b_aws_cf.exceptions.stack_does_not_exist import StackDoesNotExist
 from b_aws_cf.stack import Stack
 
 
@@ -12,6 +15,11 @@ def test_FUNC_get_outputs_WITH_existing_stack_EXPECT_outputs_returned(stack_fixt
 
     outputs = Stack.from_name(stack_name).get_outputs()
     assert outputs == {}
+
+
+def test_FUNC_from_name_WITH_non_existing_stack_EXPECT_stack_returned():
+    with pytest.raises(StackDoesNotExist):
+        Stack.from_name('Some-Name-That-Does-Not-Exist-123abc')
 
 
 def test_FUNC_from_name_WITH_existing_stack_EXPECT_stack_returned(stack_fixture):

@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
 
+from botocore.exceptions import ClientError
+
 from b_aws_cf.credentials import Credentials
+from b_aws_cf.exceptions.stack_does_not_exist import StackDoesNotExist
 from b_aws_cf.stack_status import StackStatus
 
 
@@ -55,7 +58,14 @@ class Stack:
     ) -> 'Stack':
         credentials = credentials or Credentials()
         client = credentials.boto_session.client('cloudformation')
-        description = client.describe_stacks(StackName=stack_name)['Stacks'][0]
+        try:
+            description = client.describe_stacks(StackName=stack_name)['Stacks'][0]
+        except ClientError as ex:
+            is_validation_err = ex.response.get('Error').get('Code') == 'ValidationError'
+            is_does_not_exist_err = 'does not exist' in ex.response.get('Error').get('Message')
+            if is_validation_err and is_does_not_exist_err:
+                raise StackDoesNotExist(f'{stack_name} does not exist.')
+            raise
         return Stack.deserialize(description)
 
     @staticmethod
