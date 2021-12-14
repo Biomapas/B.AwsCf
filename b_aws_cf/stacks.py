@@ -126,7 +126,10 @@ class Stacks:
             print(f'Previous stacks len and current stacks len are different.')
 
         if stacks:
-            [stack.delete() for stack in stacks]
+            for stack in stacks:
+                print(f'Deleting stack: {stack.stack_name}.')
+                stack.delete()
+
             print(f'Sleeping for {deletion_sleep_interval} seconds...')
             time.sleep(deletion_sleep_interval)
             self.__delete(name_prefix, stacks, current_same_stacks_iteration, max_same_stacks_iterations)
